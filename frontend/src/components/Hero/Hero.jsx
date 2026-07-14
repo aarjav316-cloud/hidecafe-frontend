@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import heroVideo from "../../assets/videos/hero.mp4";
 import heroVideo2 from "../../assets/videos/hero2.mp4";
+import HeroContent from "./HeroContent";
 
 const Hero = () => {
   const videoMobileRef = useRef(null);
@@ -88,6 +89,9 @@ const Hero = () => {
             "linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.60))",
         }}
       />
+
+      {/* Hero Content */}
+      <HeroContent />
     </section>
   );
 };

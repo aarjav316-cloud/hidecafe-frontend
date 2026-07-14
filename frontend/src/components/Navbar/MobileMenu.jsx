@@ -89,7 +89,7 @@ const MobileMenu = ({ isOpen, onClose }) => {
 
       {/* Menu Content */}
       <div className="flex-1 flex flex-col justify-center items-center px-8">
-        <nav>
+        <nav style={{ fontFamily: "var(--font-family-geist)" }}>
           <ul className="space-y-8">
             {mainLinks.map((link, index) => (
               <li
@@ -111,7 +111,10 @@ const MobileMenu = ({ isOpen, onClose }) => {
       </div>
 
       {/* Footer Links */}
-      <div className="pb-12 px-8">
+      <div
+        className="pb-12 px-8"
+        style={{ fontFamily: "var(--font-family-geist)" }}
+      >
         <div className="flex flex-col items-center space-y-4">
           {footerLinks.map((link, index) => (
             <a

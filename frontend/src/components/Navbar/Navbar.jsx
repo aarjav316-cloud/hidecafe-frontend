@@ -87,7 +87,10 @@ const Navbar = () => {
             {/* Center - Navigation Links (Desktop) / Logo (Mobile) */}
             <div className="absolute left-1/2 -translate-x-1/2">
               {/* Desktop Navigation */}
-              <ul className="hidden lg:flex items-center space-x-10 xl:space-x-12">
+              <ul
+                className="hidden lg:flex items-center space-x-10 xl:space-x-12"
+                style={{ fontFamily: "var(--font-family-geist)" }}
+              >
                 {navLinks.map((link) => (
                   <li key={link}>
                     <a
