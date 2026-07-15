@@ -17,11 +17,7 @@ const Hero = () => {
       timelineRef.current = tl;
 
       // 1. Video fade in - 2 seconds (both mobile and desktop)
-      tl.fromTo(
-        [videoMobileRef.current, videoDesktopRef.current],
-        { opacity: 0 },
-        { opacity: 1, duration: 2, ease: "power2.out" },
-      );
+      tl.fromTo(videoMobileRef.current, { opacity: 0 }, { opacity: 1, duration: 2, ease: "power2.out" });
 
       // 2. Overlay fade in - 1.5 seconds (starts after video begins)
       tl.fromTo(
@@ -32,7 +28,7 @@ const Hero = () => {
       );
 
       // 3. Cinematic zoom - extremely slow, almost invisible (both videos)
-      gsap.to([videoMobileRef.current, videoDesktopRef.current], {
+      gsap.to(videoMobileRef.current, {
         scale: 1.08,
         duration: 30,
         ease: "none",
@@ -51,32 +47,19 @@ const Hero = () => {
 
   return (
     <section className="relative w-full h-screen overflow-hidden">
-      {/* Video Background - Mobile/Tablet (< 1024px) */}
+      {/* Single responsive video source prevents loading both variants up front */}
       <video
         ref={videoMobileRef}
-        className="absolute inset-0 w-full h-full object-cover lg:hidden"
+        className="absolute inset-0 w-full h-full object-cover"
         autoPlay
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         style={{ opacity: 0 }}
       >
-        <source src={heroVideo} type="video/mp4" />
-      </video>
-
-      {/* Video Background - Desktop (>= 1024px) */}
-      <video
-        ref={videoDesktopRef}
-        className="absolute inset-0 w-full h-full object-cover hidden lg:block"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        style={{ opacity: 0 }}
-      >
-        <source src={heroVideo2} type="video/mp4" />
+        <source media="(max-width: 1023px)" src={heroVideo} type="video/mp4" />
+        <source media="(min-width: 1024px)" src={heroVideo2} type="video/mp4" />
       </video>
 
       {/* Premium Dark Gradient Overlay */}

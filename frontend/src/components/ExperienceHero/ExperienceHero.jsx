@@ -122,12 +122,16 @@ const ExperienceHero = () => {
             src={experienceImageMobile}
             alt="HIDE café interior experience"
             className="w-full h-full object-cover lg:hidden"
+            loading="lazy"
+            decoding="async"
           />
           {/* Desktop Image */}
           <img
             src={experienceImage}
             alt="HIDE café interior experience"
             className="hidden lg:block w-full h-full object-cover object-center"
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

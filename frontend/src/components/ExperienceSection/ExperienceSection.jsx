@@ -14,10 +14,10 @@ const ExperiencePanel = ({
   description,
   ctaText,
   ctaLink,
-  isLeft,
   isHovered,
   onHover,
   onLeave,
+  shouldLoadVideo,
 }) => {
   const panelRef = useRef(null);
   const videoRef = useRef(null);
@@ -29,8 +29,9 @@ const ExperiencePanel = ({
   const arrowRef = useRef(null);
 
   useEffect(() => {
+    if (!shouldLoadVideo) return;
+
     const ctx = gsap.context(() => {
-      // Initial animations on scroll
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: panelRef.current,
@@ -39,14 +40,12 @@ const ExperiencePanel = ({
         },
       });
 
-      // Video scale in
       tl.fromTo(
         videoRef.current,
         { scale: 1.08, opacity: 0 },
         { scale: 1, opacity: 1, duration: 1.4, ease: "power3.out" },
       );
 
-      // Label
       tl.fromTo(
         labelRef.current,
         { opacity: 0, y: 20 },
@@ -54,7 +53,6 @@ const ExperiencePanel = ({
         "-=0.8",
       );
 
-      // Heading
       tl.fromTo(
         headingRef.current,
         { opacity: 0, y: 30 },
@@ -62,7 +60,6 @@ const ExperiencePanel = ({
         "-=0.5",
       );
 
-      // Description
       tl.fromTo(
         descriptionRef.current,
         { opacity: 0, y: 30 },
@@ -70,7 +67,6 @@ const ExperiencePanel = ({
         "-=0.6",
       );
 
-      // CTA
       tl.fromTo(
         ctaRef.current,
         { opacity: 0, y: 20 },
@@ -80,10 +76,11 @@ const ExperiencePanel = ({
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [shouldLoadVideo]);
 
-  // Hover effects
   useEffect(() => {
+    if (!shouldLoadVideo) return;
+
     if (isHovered) {
       gsap.to(videoRef.current, {
         scale: 1.05,
@@ -131,7 +128,7 @@ const ExperiencePanel = ({
         ease: "power2.out",
       });
     }
-  }, [isHovered]);
+  }, [isHovered, shouldLoadVideo]);
 
   const handleCTAHover = (isHovering) => {
     gsap.to(arrowRef.current, {
@@ -151,7 +148,6 @@ const ExperiencePanel = ({
         flex: isHovered ? "1 1 60%" : "1 1 50%",
       }}
     >
-      {/* Video Background */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
@@ -159,13 +155,12 @@ const ExperiencePanel = ({
         muted
         loop
         playsInline
-        preload="auto"
+        preload="metadata"
         style={{ opacity: 0 }}
       >
-        <source src={video} type="video/mp4" />
+        {shouldLoadVideo ? <source src={video} type="video/mp4" /> : null}
       </video>
 
-      {/* Gradient Overlay */}
       <div
         ref={overlayRef}
         className="absolute inset-0"
@@ -175,10 +170,8 @@ const ExperiencePanel = ({
         }}
       />
 
-      {/* Content */}
       <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-12 xl:p-16">
         <div className="max-w-[480px] space-y-6">
-          {/* Label */}
           <div
             ref={labelRef}
             style={{
@@ -191,7 +184,6 @@ const ExperiencePanel = ({
             </p>
           </div>
 
-          {/* Heading */}
           <h3
             ref={headingRef}
             className="text-white text-[44px] sm:text-[52px] lg:text-[56px] xl:text-[64px] leading-[95%]"
@@ -205,7 +197,6 @@ const ExperiencePanel = ({
             {heading}
           </h3>
 
-          {/* Description */}
           <p
             ref={descriptionRef}
             className="text-white/90 text-[16px] lg:text-[17px] leading-[170%] max-w-[420px]"
@@ -218,7 +209,6 @@ const ExperiencePanel = ({
             {description}
           </p>
 
-          {/* CTA */}
           <div ref={ctaRef} style={{ opacity: 0 }} className="pt-4">
             <a
               href={ctaLink}
@@ -250,10 +240,35 @@ const ExperiencePanel = ({
 
 const ExperienceSection = () => {
   const [hoveredPanel, setHoveredPanel] = useState(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: "200px 0px",
+        threshold: 0.1,
+      },
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="relative w-full min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[#E8E7E5]">
-      {/* Morning Panel */}
+    <section
+      ref={sectionRef}
+      className="relative w-full min-h-screen lg:h-screen flex flex-col lg:flex-row bg-[#E8E7E5]"
+    >
       <ExperiencePanel
         video={morningVideo}
         label="MORNING"
@@ -261,13 +276,12 @@ const ExperienceSection = () => {
         description="Fresh coffee, warm pastries and peaceful mornings designed to be savored."
         ctaText="EXPLORE MORNING"
         ctaLink="#morning"
-        isLeft={true}
         isHovered={hoveredPanel === "morning"}
         onHover={() => setHoveredPanel("morning")}
         onLeave={() => setHoveredPanel(null)}
+        shouldLoadVideo={shouldLoadVideo}
       />
 
-      {/* Evening Panel */}
       <ExperiencePanel
         video={eveningVideo}
         label="EVENING"
@@ -275,10 +289,10 @@ const ExperienceSection = () => {
         description="Golden light, handcrafted drinks and meaningful conversations that deserve more time."
         ctaText="EXPLORE EVENING"
         ctaLink="#evening"
-        isLeft={false}
         isHovered={hoveredPanel === "evening"}
         onHover={() => setHoveredPanel("evening")}
         onLeave={() => setHoveredPanel(null)}
+        shouldLoadVideo={shouldLoadVideo}
       />
     </section>
   );
