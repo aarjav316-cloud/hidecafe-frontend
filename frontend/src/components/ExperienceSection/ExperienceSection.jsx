@@ -171,7 +171,7 @@ const ExperiencePanel = ({
       />
 
       <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-12 xl:p-16">
-        <div className="max-w-[480px] space-y-6">
+        <div className="max-w-[480px] space-y-5 lg:space-y-6">
           <div
             ref={labelRef}
             style={{
@@ -199,7 +199,7 @@ const ExperiencePanel = ({
 
           <p
             ref={descriptionRef}
-            className="text-white/90 text-[16px] lg:text-[17px] leading-[170%] max-w-[420px]"
+            className="text-white/90 text-[15px] lg:text-[17px] leading-[170%] max-w-[420px]"
             style={{
               opacity: 0,
               fontFamily: "var(--font-family-geist)",
@@ -209,7 +209,12 @@ const ExperiencePanel = ({
             {description}
           </p>
 
-          <div ref={ctaRef} style={{ opacity: 0 }} className="pt-4">
+          {/* CTA - Hidden on Mobile, Visible on Desktop */}
+          <div
+            ref={ctaRef}
+            style={{ opacity: 0 }}
+            className="hidden lg:block pt-4"
+          >
             <a
               href={ctaLink}
               className="group inline-flex items-center gap-2 text-white text-sm tracking-wide"
@@ -273,7 +278,7 @@ const ExperienceSection = () => {
         video={morningVideo}
         label="MORNING"
         heading="Begin Slowly."
-        description="Fresh coffee, warm pastries and peaceful mornings designed to be savored."
+        description="Slow mornings. Fresh coffee."
         ctaText="EXPLORE MORNING"
         ctaLink="#morning"
         isHovered={hoveredPanel === "morning"}
@@ -286,7 +291,7 @@ const ExperienceSection = () => {
         video={eveningVideo}
         label="EVENING"
         heading="Stay A Little Longer."
-        description="Golden light, handcrafted drinks and meaningful conversations that deserve more time."
+        description="Crafted drinks. Golden evenings."
         ctaText="EXPLORE EVENING"
         ctaLink="#evening"
         isHovered={hoveredPanel === "evening"}

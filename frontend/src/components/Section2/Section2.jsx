@@ -2,13 +2,23 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
-import section2Image from "../../assets/cafe/section2.png";
+import PremiumCarousel from "./PremiumCarousel";
+import MobileCarousel from "./MobileCarousel";
+
+// Import all cafe images
+import img2031 from "../../assets/cafe/IMG_2031.JPG.jpg";
+import img2040 from "../../assets/cafe/IMG_2040.JPG.jpg";
+import img2062 from "../../assets/cafe/IMG_2062.png";
+import img2064 from "../../assets/cafe/IMG_2064.png";
+import section2 from "../../assets/cafe/section2.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const cafeImages = [section2, img2031, img2040, img2062, img2064];
+
 const Section2 = () => {
   const sectionRef = useRef(null);
-  const imageRef = useRef(null);
+  const carouselRef = useRef(null);
   const labelRef = useRef(null);
   const headingRef = useRef(null);
   const bodyRef = useRef(null);
@@ -17,18 +27,16 @@ const Section2 = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Image animation - fade in, move up, scale
+      // Carousel animation
       gsap.fromTo(
-        imageRef.current,
+        carouselRef.current,
         {
           opacity: 0,
-          y: 40,
-          scale: 1.05,
+          x: -40,
         },
         {
           opacity: 1,
-          y: 0,
-          scale: 1,
+          x: 0,
           duration: 1.2,
           ease: "power3.out",
           scrollTrigger: {
@@ -97,25 +105,26 @@ const Section2 = () => {
       className="relative min-h-screen bg-[#E8E7E5] py-20 lg:py-0 lg:flex lg:items-center"
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-32 xl:px-40 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 xl:gap-32 items-center">
-          {/* Left - Image */}
-          <div className="order-2 lg:order-1">
-            <div
-              ref={imageRef}
-              className="w-full lg:h-[620px] overflow-hidden rounded-sm lg:rounded-3xl"
-              style={{ opacity: 0 }}
-            >
-              <img
-                src={section2Image}
-                alt="HIDE cafe interior"
-                className="w-full h-full object-cover"
-                style={{ objectPosition: "center center" }}
-              />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-center">
+          {/* Left - Carousel (45% width on desktop) */}
+          <div
+            className="order-2 lg:order-1 lg:col-span-5"
+            ref={carouselRef}
+            style={{ opacity: 0 }}
+          >
+            {/* Desktop Carousel */}
+            <div className="hidden md:block">
+              <PremiumCarousel images={cafeImages} />
+            </div>
+
+            {/* Mobile Carousel */}
+            <div className="block md:hidden">
+              <MobileCarousel images={cafeImages} />
             </div>
           </div>
 
-          {/* Right - Text Content */}
-          <div className="order-1 lg:order-2 space-y-8 lg:space-y-10">
+          {/* Right - Text Content (55% width on desktop) */}
+          <div className="order-1 lg:order-2 lg:col-span-7 space-y-8 lg:space-y-10">
             {/* Label */}
             <div
               ref={labelRef}

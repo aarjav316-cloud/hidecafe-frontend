@@ -49,11 +49,11 @@ const HeroContent = () => {
 
   return (
     <div className="absolute inset-0 flex items-center pointer-events-none">
-      <div className="w-full max-w-[520px] lg:max-w-[700px] ml-[15%] px-6 lg:px-0 space-y-10 lg:space-y-12">
+      <div className="w-full max-w-[520px] lg:max-w-[700px] ml-[15%] px-6 lg:px-0 space-y-8 md:space-y-10 lg:space-y-12">
         {/* Heading - Editorial Magazine Style */}
         <h1
           ref={headingRef}
-          className="text-white text-[52px] sm:text-[64px] lg:text-[78px] xl:text-[88px] leading-[90%] lg:whitespace-nowrap"
+          className="text-white text-[52px] sm:text-[64px] lg:text-[78px] xl:text-[88px] leading-[88%] md:leading-[90%] lg:whitespace-nowrap"
           style={{
             opacity: 0,
             fontFamily: "var(--font-family-cormorant)",
@@ -65,10 +65,10 @@ const HeroContent = () => {
           Hide from the Noise.
         </h1>
 
-        {/* Body - Light and Elegant */}
+        {/* Body - Hidden on Mobile, Visible on Desktop */}
         <p
           ref={bodyRef}
-          className="text-[18px] leading-[180%] max-w-[480px]"
+          className="hidden md:block text-[18px] leading-[180%] max-w-[480px]"
           style={{
             opacity: 0,
             fontFamily: "var(--font-family-geist)",
@@ -85,7 +85,7 @@ const HeroContent = () => {
         <div
           ref={ctaRef}
           style={{ opacity: 0 }}
-          className="pointer-events-auto pt-2"
+          className="pointer-events-auto pt-0 md:pt-2"
         >
           <a
             href="#order"
