@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import heroVideo from "../../assets/videos/hero.mp4";
-import heroVideo2 from "../../assets/videos/hero2.mp4";
+import heroVideo2 from "../../assets/videos/hero2.MP4";
 import HeroContent from "./HeroContent";
 
 const Hero = () => {
