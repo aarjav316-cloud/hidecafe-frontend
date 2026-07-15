@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 import acaiSmoothy from "../../assets/drinks/Acai Smoothy.JPG";
@@ -52,7 +52,9 @@ const wrapIndex = (index) => (index + drinks.length) % drinks.length;
 
 const SignatureDrinks = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [infoVisible, setInfoVisible] = useState(true);
+  const [cardVisible, setCardVisible] = useState(true);
+  const [textVisible, setTextVisible] = useState(true);
+  const [transitionDirection, setTransitionDirection] = useState("next");
   const [shouldRenderMedia, setShouldRenderMedia] = useState(false);
   const sectionRef = useRef(null);
 
@@ -77,20 +79,26 @@ const SignatureDrinks = () => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    setInfoVisible(false);
-    const frame = requestAnimationFrame(() => setInfoVisible(true));
+  useLayoutEffect(() => {
+    setCardVisible(false);
+    setTextVisible(false);
+
+    const frame = requestAnimationFrame(() => {
+      setCardVisible(true);
+      setTextVisible(true);
+    });
+
     return () => cancelAnimationFrame(frame);
   }, [currentIndex]);
 
   const rotate = (direction) => {
-    setCurrentIndex((prev) => {
-      if (direction === "next") {
-        return wrapIndex(prev + 1);
-      }
+    setTransitionDirection(direction);
+    const nextIndex =
+      direction === "next"
+        ? wrapIndex(currentIndex + 1)
+        : wrapIndex(currentIndex - 1);
 
-      return wrapIndex(prev - 1);
-    });
+    setCurrentIndex(nextIndex);
   };
 
   const visibleDrinks = useMemo(
@@ -135,29 +143,34 @@ const SignatureDrinks = () => {
     };
   };
 
-  const getMobileCardStyle = () => ({
-    transform: "translate(-50%, -50%) translateX(0) scale(1)",
-    opacity: 1,
-    zIndex: 2,
-  });
+  const getMobileCardStyle = () => {
+    const slideOffset = transitionDirection === "next" ? 12 : -12;
 
-  const renderCard = (drink, offset, isMobile = false) => {
-    const style = isMobile ? getMobileCardStyle() : getDesktopCardStyle(offset);
+    return {
+      transform: cardVisible
+        ? "translate(-50%, -50%) translateY(0) scale(1)"
+        : `translate(-50%, -50%) translateY(${slideOffset}px) scale(0.985)`,
+      opacity: cardVisible ? 1 : 0,
+      zIndex: 2,
+    };
+  };
+
+  const renderCard = (drink, offset, mobileMode = false) => {
+    const baseStyle = mobileMode
+      ? getMobileCardStyle()
+      : getDesktopCardStyle(offset);
+
+    const isCurrent = offset === 0;
 
     return (
-      <button
-        key={drink.id}
-        type="button"
-        onClick={() => {
-          if (offset < 0) rotate("prev");
-          if (offset > 0) rotate("next");
-        }}
-        className="absolute top-1/2 left-1/2 w-[78vw] max-w-[340px] sm:w-[300px] lg:w-[320px] xl:w-[340px] h-[380px] sm:h-[400px] lg:h-[430px] rounded-[28px] overflow-hidden shadow-2xl text-left transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2E2925]/40 active:scale-[0.99]"
+      <div
+        key={`${drink.id}-${mobileMode ? currentIndex : offset}`}
+        className="absolute top-1/2 left-1/2 w-[78vw] max-w-[340px] sm:w-[300px] lg:w-[320px] xl:w-[340px] h-[380px] sm:h-[400px] lg:h-[430px] rounded-[28px] overflow-hidden text-left transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          ...style,
+          ...baseStyle,
           willChange: "transform, opacity",
+          touchAction: "pan-y",
         }}
-        aria-label={offset === 0 ? drink.name : `Show ${drink.name}`}
       >
         <div className="relative w-full h-full bg-gradient-to-br from-white/95 to-white/80">
           {shouldRenderMedia ? (
@@ -165,7 +178,7 @@ const SignatureDrinks = () => {
               src={drink.image}
               alt={drink.name}
               className="w-full h-full object-cover transition-transform duration-700 ease-out will-change-transform"
-              loading={offset === 0 ? "eager" : "lazy"}
+              loading={isCurrent ? "eager" : "lazy"}
               decoding="async"
             />
           ) : (
@@ -205,7 +218,7 @@ const SignatureDrinks = () => {
             </h3>
           </div>
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -270,7 +283,11 @@ const SignatureDrinks = () => {
               {drinks.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentIndex(index)}
+                  onClick={() => {
+                    if (index === currentIndex) return;
+                    setTransitionDirection(index > currentIndex ? "next" : "prev");
+                    setCurrentIndex(index);
+                  }}
                   className="h-2 rounded-full transition-all duration-300"
                   style={{
                     width: index === currentIndex ? 18 : 8,
@@ -308,10 +325,11 @@ const SignatureDrinks = () => {
 
         <div className="mt-10 sm:mt-14 lg:mt-8 text-center max-w-[640px] mx-auto">
           <div
-            className="transition-all duration-300 ease-out"
+            key={currentIndex}
+            className="transition-[opacity,transform] duration-300 ease-out"
             style={{
-              opacity: infoVisible ? 1 : 0,
-              transform: infoVisible ? "translateY(0)" : "translateY(10px)",
+              opacity: textVisible ? 1 : 0,
+              transform: textVisible ? "translateY(0)" : "translateY(10px)",
             }}
           >
             <h3
