@@ -50,7 +50,7 @@ function App() {
   }, [showLoader]);
 
   return (
-    <div className="overflow-x-hidden">
+    <div className="[overflow-x:clip]">
       <InitialLoader visible={showLoader} />
       <div
         className={`transition-opacity duration-500 ease-out ${
@@ -58,12 +58,22 @@ function App() {
         }`}
       >
         <Navbar />
-        <Hero />
-        <Section2 />
-        <ExperienceSection />
-        <ExperienceHero />
-        <SignatureDrinks />
-        <Footer />
+        <main>
+          <div className="relative bg-[#E8E7E5]">
+            <div className="sticky top-0 z-0 h-screen overflow-hidden">
+              <Hero />
+            </div>
+            <div className="relative z-10">
+              <Section2 />
+            </div>
+          </div>
+          <div className="relative z-20 bg-[#E8E7E5]">
+            <ExperienceSection />
+            <ExperienceHero />
+            <SignatureDrinks />
+            <Footer />
+          </div>
+        </main>
       </div>
     </div>
   );
