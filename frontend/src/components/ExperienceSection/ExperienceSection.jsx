@@ -150,7 +150,7 @@ const ExperiencePanel = ({
   return (
     <div
       ref={panelRef}
-      className="relative h-[68vh] min-h-[500px] sm:min-h-[560px] lg:h-[72vh] lg:min-h-[620px] lg:max-h-[760px] overflow-hidden rounded-[28px] lg:rounded-[34px] transition-[flex,transform] duration-700 ease-out opacity-0 bg-[#2E2925]"
+      className="relative h-[68vh] min-h-125 sm:min-h-140 lg:h-[72vh] lg:min-h-155 lg:max-h-190 overflow-hidden rounded-[28px] lg:rounded-[34px] transition-[flex,transform] duration-700 ease-out opacity-0 bg-[#2E2925]"
       onMouseEnter={isInteractive ? onHover : undefined}
       onMouseLeave={isInteractive ? onLeave : undefined}
       style={
@@ -182,7 +182,7 @@ const ExperiencePanel = ({
       />
 
       <div className="absolute inset-0 flex flex-col justify-end p-7 sm:p-9 lg:p-12 xl:p-14">
-        <div className="max-w-[460px] space-y-5 lg:space-y-6">
+        <div className="max-w-115 space-y-5 lg:space-y-6">
           <div
             ref={labelRef}
             style={{
@@ -210,7 +210,7 @@ const ExperiencePanel = ({
 
           <p
             ref={descriptionRef}
-            className="text-white/90 text-[15px] lg:text-[17px] leading-[170%] max-w-[400px]"
+            className="text-white/90 text-[15px] lg:text-[17px] leading-[170%] max-w-100"
             style={{
               opacity: 0,
               fontFamily: "var(--font-family-geist)",
@@ -347,10 +347,10 @@ const ExperienceSection = () => {
       ref={sectionRef}
       className="relative w-full bg-[#E8E7E5] py-16 sm:py-20 lg:py-24 xl:py-28 overflow-hidden"
     >
-      <div className="max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-12">
+      <div className="max-w-350 mx-auto px-5 sm:px-6 lg:px-12">
         <div
           ref={introRef}
-          className="mb-10 sm:mb-12 lg:mb-14 max-w-[760px] opacity-0"
+          className="mb-10 sm:mb-12 lg:mb-14 max-w-190 opacity-0"
         >
           <p
             ref={eyebrowRef}
@@ -377,7 +377,7 @@ const ExperienceSection = () => {
 
           <p
             ref={copyRef}
-            className="mt-6 max-w-[560px] text-[15px] sm:text-[17px] leading-[175%]"
+            className="mt-6 max-w-140 text-[15px] sm:text-[17px] leading-[175%]"
             style={{ color: "#5B5550", fontFamily: "var(--font-family-geist)" }}
           >
             From slow first cups to warm evening pauses, HIDE changes pace with
