@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { gsap } from "gsap";
+import { useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const MobileCarousel = ({ images }) => {
@@ -83,7 +82,7 @@ const MobileCarousel = ({ images }) => {
     <div className="relative w-full">
       {/* Carousel Container */}
       <div
-        className="relative overflow-hidden"
+        className="relative overflow-hidden px-4"
         onMouseDown={handleDragStart}
         onMouseMove={handleDragMove}
         onMouseUp={handleDragEnd}
@@ -110,15 +109,13 @@ const MobileCarousel = ({ images }) => {
               className="min-w-full shrink-0 flex justify-center items-center"
             >
               <div
-                className="relative w-[88vw] max-w-[360px] h-[450px] overflow-hidden rounded-[26px]"
-                style={{
-                  boxShadow: "0 20px 60px rgba(46, 41, 37, 0.2)",
-                }}
+                className="relative w-full max-w-[360px] h-[450px] overflow-hidden rounded-[26px] bg-[#D8D1C9] isolate"
+                style={{ transform: "translateZ(0)" }}
               >
                 <img
                   src={image}
                   alt={`HIDE cafe ${index}`}
-                  className="absolute inset-0 w-full h-full"
+                  className="absolute inset-0 w-full h-full rounded-[inherit] select-none"
                   loading="lazy"
                   style={{
                     objectFit: "cover",

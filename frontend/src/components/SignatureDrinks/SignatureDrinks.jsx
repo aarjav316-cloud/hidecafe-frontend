@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 
 import acaiSmoothy from "../../assets/drinks/Acai Smoothy.JPG";
@@ -52,11 +52,22 @@ const wrapIndex = (index) => (index + drinks.length) % drinks.length;
 
 const SignatureDrinks = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [cardVisible, setCardVisible] = useState(true);
+  const [mobileSlideIndex, setMobileSlideIndex] = useState(1);
+  const [isMobileTransitioning, setIsMobileTransitioning] = useState(false);
+  const [isMobileDragging, setIsMobileDragging] = useState(false);
   const [textVisible, setTextVisible] = useState(true);
-  const [transitionDirection, setTransitionDirection] = useState("next");
   const [shouldRenderMedia, setShouldRenderMedia] = useState(false);
   const sectionRef = useRef(null);
+  const mobileResetTimerRef = useRef(null);
+  const desktopWheelLockRef = useRef(null);
+  const textRevealFrameRef = useRef(null);
+  const dragStartX = useRef(0);
+  const dragCurrentX = useRef(0);
+
+  const mobileSlides = useMemo(
+    () => [drinks[drinks.length - 1], ...drinks, drinks[0]],
+    [],
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -79,26 +90,135 @@ const SignatureDrinks = () => {
     return () => observer.disconnect();
   }, []);
 
-  useLayoutEffect(() => {
-    setCardVisible(false);
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(mobileResetTimerRef.current);
+      window.clearTimeout(desktopWheelLockRef.current);
+      window.cancelAnimationFrame(textRevealFrameRef.current);
+    };
+  }, []);
+
+  const revealDrinkText = useCallback((index) => {
+    window.cancelAnimationFrame(textRevealFrameRef.current);
+    setCurrentIndex(index);
     setTextVisible(false);
 
-    const frame = requestAnimationFrame(() => {
-      setCardVisible(true);
+    textRevealFrameRef.current = window.requestAnimationFrame(() => {
       setTextVisible(true);
     });
+  }, []);
 
-    return () => cancelAnimationFrame(frame);
-  }, [currentIndex]);
+  const goToMobileSlide = useCallback(
+    (index, transition = true) => {
+      if (isMobileTransitioning) return;
 
-  const rotate = (direction) => {
-    setTransitionDirection(direction);
-    const nextIndex =
-      direction === "next"
-        ? wrapIndex(currentIndex + 1)
-        : wrapIndex(currentIndex - 1);
+      const nextDrinkIndex =
+        index === 0
+          ? drinks.length - 1
+          : index === drinks.length + 1
+            ? 0
+            : index - 1;
 
-    setCurrentIndex(nextIndex);
+      window.clearTimeout(mobileResetTimerRef.current);
+      setIsMobileTransitioning(transition);
+      setMobileSlideIndex(index);
+      revealDrinkText(nextDrinkIndex);
+
+      if (transition) {
+        mobileResetTimerRef.current = window.setTimeout(() => {
+          setIsMobileTransitioning(false);
+
+          if (index === 0) {
+            setMobileSlideIndex(drinks.length);
+          } else if (index === drinks.length + 1) {
+            setMobileSlideIndex(1);
+          }
+        }, 550);
+      }
+    },
+    [isMobileTransitioning, revealDrinkText],
+  );
+
+  const goToMobileNext = useCallback(() => {
+    goToMobileSlide(mobileSlideIndex + 1);
+  }, [goToMobileSlide, mobileSlideIndex]);
+
+  const goToMobilePrev = useCallback(() => {
+    goToMobileSlide(mobileSlideIndex - 1);
+  }, [goToMobileSlide, mobileSlideIndex]);
+
+  const goToDrink = useCallback(
+    (index) => {
+      revealDrinkText(wrapIndex(index));
+    },
+    [revealDrinkText],
+  );
+
+  const goToDesktopNext = useCallback(() => {
+    goToDrink(currentIndex + 1);
+  }, [currentIndex, goToDrink]);
+
+  const goToDesktopPrev = useCallback(() => {
+    goToDrink(currentIndex - 1);
+  }, [currentIndex, goToDrink]);
+
+  const handleDesktopWheel = (event) => {
+    const dominantDelta =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
+
+    if (Math.abs(dominantDelta) < 18 || desktopWheelLockRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (dominantDelta > 0) {
+      goToDesktopNext();
+    } else {
+      goToDesktopPrev();
+    }
+
+    desktopWheelLockRef.current = window.setTimeout(() => {
+      desktopWheelLockRef.current = null;
+    }, 420);
+  };
+
+  const handleDragStart = (event) => {
+    if (isMobileTransitioning) return;
+
+    const startX = event.type.includes("mouse")
+      ? event.clientX
+      : event.touches[0].clientX;
+
+    setIsMobileDragging(true);
+    dragStartX.current = startX;
+    dragCurrentX.current = startX;
+  };
+
+  const handleDragMove = (event) => {
+    if (!isMobileDragging) return;
+
+    dragCurrentX.current = event.type.includes("mouse")
+      ? event.clientX
+      : event.touches[0].clientX;
+  };
+
+  const handleDragEnd = () => {
+    if (!isMobileDragging) return;
+
+    setIsMobileDragging(false);
+
+    const dragDistance = dragStartX.current - dragCurrentX.current;
+
+    if (Math.abs(dragDistance) > 50) {
+      if (dragDistance > 0) {
+        goToMobileNext();
+      } else {
+        goToMobilePrev();
+      }
+    }
   };
 
   const visibleDrinks = useMemo(
@@ -143,36 +263,20 @@ const SignatureDrinks = () => {
     };
   };
 
-  const getMobileCardStyle = () => {
-    const slideOffset = transitionDirection === "next" ? 12 : -12;
-
-    return {
-      transform: cardVisible
-        ? "translate(-50%, -50%) translateY(0) scale(1)"
-        : `translate(-50%, -50%) translateY(${slideOffset}px) scale(0.985)`,
-      opacity: cardVisible ? 1 : 0,
-      zIndex: 2,
-    };
-  };
-
-  const renderCard = (drink, offset, mobileMode = false) => {
-    const baseStyle = mobileMode
-      ? getMobileCardStyle()
-      : getDesktopCardStyle(offset);
-
+  const renderDesktopCard = (drink, offset) => {
     const isCurrent = offset === 0;
 
     return (
       <div
-        key={`${drink.id}-${mobileMode ? currentIndex : offset}`}
-        className="absolute top-1/2 left-1/2 w-[78vw] max-w-[340px] sm:w-[300px] lg:w-[320px] xl:w-[340px] h-[380px] sm:h-[400px] lg:h-[430px] rounded-[28px] overflow-hidden text-left transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        key={`${drink.id}-${offset}`}
+        className="absolute top-1/2 left-1/2 w-[78vw] max-w-85 sm:w-75 lg:w-[320px] xl:w-85 h-95 sm:h-100 lg:h-107.5 rounded-[28px] overflow-hidden text-left transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
         style={{
-          ...baseStyle,
+          ...getDesktopCardStyle(offset),
           willChange: "transform, opacity",
           touchAction: "pan-y",
         }}
       >
-        <div className="relative w-full h-full bg-gradient-to-br from-white/95 to-white/80">
+        <div className="relative w-full h-full bg-linear-to-br from-white/95 to-white/80">
           {shouldRenderMedia ? (
             <img
               src={drink.image}
@@ -222,6 +326,69 @@ const SignatureDrinks = () => {
     );
   };
 
+  const renderMobileSlide = (drink, index) => {
+    return (
+      <div
+        key={`mobile-drink-${drink.id}-${index}`}
+        className="min-w-full shrink-0 flex justify-center items-center px-2"
+      >
+        <div
+          className="relative w-[78vw] max-w-[340px] sm:w-[300px] h-[380px] sm:h-[400px] rounded-[28px] overflow-hidden text-left"
+          style={{
+            touchAction: "pan-y",
+          }}
+        >
+          <div className="relative w-full h-full bg-gradient-to-br from-white/95 to-white/80">
+            {shouldRenderMedia ? (
+              <img
+                src={drink.image}
+                alt={drink.name}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
+              />
+            ) : (
+              <div
+                className="w-full h-full"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(255,255,255,0.92), rgba(232,231,229,0.95))",
+                }}
+              />
+            )}
+
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.42), rgba(0,0,0,0.05) 45%, transparent)",
+              }}
+            />
+
+            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+              <p
+                className="text-white text-xs tracking-[0.2em] uppercase mb-2"
+                style={{ fontFamily: "var(--font-family-geist)" }}
+              >
+                Featured drink
+              </p>
+              <h3
+                className="text-white text-[28px] sm:text-[32px] leading-[95%]"
+                style={{
+                  fontFamily: "var(--font-family-cormorant)",
+                  fontWeight: 600,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {drink.name}
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const currentDrink = drinks[currentIndex];
 
   return (
@@ -265,14 +432,38 @@ const SignatureDrinks = () => {
         </div>
 
         <div className="lg:hidden">
-          <div className="relative h-[390px] sm:h-[450px] overflow-hidden">
-            {renderCard(currentDrink, 0, true)}
+          <div
+            className="relative overflow-hidden"
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+          >
+            <div
+              className="flex"
+              style={{
+                transform: `translate3d(-${mobileSlideIndex * 100}%, 0, 0)`,
+                transition: isMobileTransitioning
+                  ? "transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)"
+                  : "none",
+                cursor: isMobileDragging ? "grabbing" : "grab",
+                willChange: "transform",
+              }}
+            >
+              {mobileSlides.map((drink, index) =>
+                renderMobileSlide(drink, index),
+              )}
+            </div>
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-4">
             <button
-              onClick={() => rotate("prev")}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 active:scale-95"
+              onClick={goToMobilePrev}
+              disabled={isMobileTransitioning}
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#2E2925", color: "#E8E7E5" }}
               aria-label="Previous drink"
             >
@@ -285,9 +476,9 @@ const SignatureDrinks = () => {
                   key={index}
                   onClick={() => {
                     if (index === currentIndex) return;
-                    setTransitionDirection(index > currentIndex ? "next" : "prev");
-                    setCurrentIndex(index);
+                    goToMobileSlide(index + 1);
                   }}
+                  disabled={isMobileTransitioning}
                   className="h-2 rounded-full transition-all duration-300"
                   style={{
                     width: index === currentIndex ? 18 : 8,
@@ -301,8 +492,9 @@ const SignatureDrinks = () => {
             </div>
 
             <button
-              onClick={() => rotate("next")}
-              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 active:scale-95"
+              onClick={goToMobileNext}
+              disabled={isMobileTransitioning}
+              className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#2E2925", color: "#E8E7E5" }}
               aria-label="Next drink"
             >
@@ -312,14 +504,54 @@ const SignatureDrinks = () => {
         </div>
 
         <div className="hidden lg:block">
-          <div className="relative h-[560px] xl:h-[620px]">
+          <div
+            className="relative h-[560px] xl:h-[620px]"
+            onWheel={handleDesktopWheel}
+          >
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-full max-w-[980px] h-[430px] xl:h-[470px]">
                 {visibleDrinks.map(({ drink, offset }) =>
-                  renderCard(drink, offset, false),
+                  renderDesktopCard(drink, offset),
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 -mt-6 xl:-mt-10">
+            <button
+              onClick={goToDesktopPrev}
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-110 active:scale-95"
+              style={{ backgroundColor: "#2E2925", color: "#E8E7E5" }}
+              aria-label="Previous drink"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            <div className="flex gap-2">
+              {drinks.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToDrink(index)}
+                  className="h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: index === currentIndex ? 18 : 8,
+                    backgroundColor:
+                      index === currentIndex ? "#2E2925" : "#5B5550",
+                    opacity: index === currentIndex ? 1 : 0.35,
+                  }}
+                  aria-label={`Go to drink ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={goToDesktopNext}
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 hover:scale-110 active:scale-95"
+              style={{ backgroundColor: "#2E2925", color: "#E8E7E5" }}
+              aria-label="Next drink"
+            >
+              <ChevronRight size={24} />
+            </button>
           </div>
         </div>
 

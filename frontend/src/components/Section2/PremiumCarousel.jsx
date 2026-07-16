@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { gsap } from "gsap";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PremiumCarousel = ({ images }) => {

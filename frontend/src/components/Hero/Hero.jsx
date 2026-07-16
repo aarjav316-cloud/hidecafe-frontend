@@ -6,7 +6,6 @@ import HeroContent from "./HeroContent";
 
 const Hero = () => {
   const videoMobileRef = useRef(null);
-  const videoDesktopRef = useRef(null);
   const overlayRef = useRef(null);
   const timelineRef = useRef(null);
 
